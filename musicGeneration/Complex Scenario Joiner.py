@@ -15,15 +15,15 @@ class Beat:
         self.volume = volume
 
 
-def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
+def GetTiles(frames, rate, pick, maxTPS, saveName):
     workframes = [abs(item) for item in frames]
 
     silentLimit = max(workframes) * 0.2
 
-    x = np.arange(0, len(workframes), 1)
-    plt.plot(x, workframes)
-    plt.plot(0, silentLimit, 'r.', 'MarkerSize', 50)
-    plt.show()
+    # x = np.arange(0, len(workframes), 1)
+    # plt.plot(x, workframes)
+    # plt.plot(0, silentLimit, 'r.', 'MarkerSize', 50)
+    # plt.show()
 
     # print (len(workframes) / rate / 2)
     pies = []
@@ -100,24 +100,22 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
             # plt.plot(minBeatIndex, minBeat, 'r.', 'MarkerSize', 5)
             # plt.show()
 
-            #print(f"Adding {iter} times for {rate}")
+            # print(f"Adding {iter} times for {rate}")
             for i in beatpointsIndexCompleted:
                 i.index += iter * rate
 
-
             # print ([item.index for item in beatpointsIndexCompleted])
-
 
             # print([item.index for item in complexPie])
             totalBeats.extend(beatpointsIndexCompleted)
-            #print(f"Analyzing... {round(pieInd / len(pies) * 100, 2)}% ({pieInd} / {len(pies)})")
+            # print(f"Analyzing... {round(pieInd / len(pies) * 100, 2)}% ({pieInd} / {len(pies)})")
             iter += 1
             bar()
 
     totalBeats.sort(key=lambda x: x.index)
 
-    print (">>> Тайлы получены")
-    print (">>> Создание комплексного пая")
+    print(">>> Тайлы получены")
+    print(">>> Создание комплексного пая")
     complexTiles = []
     addedIndex = 0
     t = 0
@@ -137,34 +135,36 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
                 complexTiles.append(Beat(0, 0))
             bar()
 
-    til = open(f"/Users/felixmoore/Desktop/CANTO Tiles/{saveName}.complextil", "w")
-
-    for i in complexTiles:
-        til.write(f"{i.index / rate}\n")
-
     # x = np.arange(0, len(workframes), 1)
     # plt.plot(x, workframes)
     # plt.plot(0, silentLimit, 'r.', 'MarkerSize', 50)
 
-    # for i in totalBeats:
-    #     plt.plot(i.index, i.volume, 'r.', 'MarkerSize', 50)
+    tb = []
+    for i in complexTiles:
+        tb.append(i)
 
     # plt.show()
 
-    print(f'Done with {len(totalBeats)}')
+    print(f'Done with {len(tb)}')
+
+    return tb
 
 
-source = wave.open(
+def isNoneBeats(pie):
+    return pie.count(0) == 0
+
+
+sourceMusic = wave.open(
     "/Users/felixmoore/Downloads/iowa-dushno-duet-mp3 [music].wav",
     mode='rb')
 
-framesCount = source.getnframes()
-rate = source.getframerate()
+framesCount = sourceMusic.getnframes()
+rate = sourceMusic.getframerate()
 
 print(f"Количество фреймов: {framesCount}\nФреймрейт: {rate}\nДлина аудиофайла (сек.): {framesCount / rate}")
 
 print("Чтение фреймов...")
-frames = source.readframes(framesCount)
+frames = sourceMusic.readframes(framesCount)
 print("Фреймы считаны. Анализируем...")
 
 frames = struct.unpack("<" + str(framesCount * 2) + "h", frames)
@@ -180,8 +180,50 @@ print(f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFram
 print("-------------НАСТРОЙКА-------------")
 print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
-GetTileCountByPicks(framesList, rate, 0.7, 5, "DushnoDuetMusic")
+print(">>> Getting Tiles Music")
+MusicTiles = GetTiles(framesList, rate, 0.7, 5, "DushnoDuetMusic")
+
+sourceVocals = wave.open(
+    "/Users/felixmoore/Downloads/iowa-dushno-duet-mp3 [vocals].wav",
+    mode='rb')
+
+framesCount = sourceVocals.getnframes()
+rate = sourceVocals.getframerate()
+
+print(f"Количество фреймов: {framesCount}\nФреймрейт: {rate}\nДлина аудиофайла (сек.): {framesCount / rate}")
+
+print("Чтение фреймов...")
+frames = sourceVocals.readframes(framesCount)
+print("Фреймы считаны. Анализируем...")
+
+frames = struct.unpack("<" + str(framesCount * 2) + "h", frames)
+framesList = list(frames)
+
+print(">>> Getting Tiles Vocals")
+VocalTiles = GetTiles(framesList, rate, 0.7, 5, "DushnoDuetVocals")
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")
 # print (f"Пик 4500; TPS 3 = {GetTileCountByPicks(frames, rate, 4500, 3)} нот")
+
+finalBeats = []
+
+with alive_bar(math.ceil(len(frames) / rate), title='Генерация комплексного пая всего произведения', bar='smooth') as bar:
+    for i in range(math.ceil(len(frames) / rate)):
+        if (i + 1) * rate > len(frames):
+            musicPie = MusicTiles[i * rate:len(frames)]
+            vocalPie = VocalTiles[i * rate:len(frames)]
+        else:
+            musicPie = MusicTiles[i * rate:(i + 1) * rate]
+            vocalPie = VocalTiles[i * rate:(i + 1) * rate]
+        if isNoneBeats([item.index for item in vocalPie]):
+            finalBeats.extend(musicPie)
+        else:
+            finalBeats.extend(vocalPie)
+        bar()
+
+with alive_bar(len(finalBeats), title='Генерация плота', bar='smooth') as bar:
+    for i in finalBeats:
+        plt.plot (i.index, i.volume, 'b.')
+        bar()
+plt.show()
