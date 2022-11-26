@@ -155,7 +155,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
 
 
 source = wave.open(
-    "/Users/felixmoore/Downloads/iowa-dushno-duet-mp3 [music].wav",
+    "C:\\Users\\Администратор\\Downloads\\DushnoMusic.wav",
     mode='rb')
 
 framesCount = source.getnframes()

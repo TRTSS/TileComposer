@@ -119,22 +119,37 @@ def GetTiles(frames, rate, pick, maxTPS, saveName):
     complexTiles = []
     addedIndex = 0
     t = 0
-    with alive_bar(len(frames), title='Генерация комплексного пая', bar='smooth') as bar:
-        for i in range(0, len(frames)):
-            if len(totalBeats) > 0:
-                empty = True
-                for b in totalBeats:
-                    if b.index == i:
-                        empty = False
-                if empty:
-                    complexTiles.append(Beat(0, 0))
-                else:
-                    complexTiles.append(totalBeats[addedIndex])
-                    addedIndex += 1
+    # with alive_bar(len(frames), title='Генерация комплексного пая', bar='smooth') as bar:
+        # for i in range(0, len(frames)):
+        #     if len(totalBeats) > 0:
+        #         empty = True
+        #         for b in totalBeats:
+        #             if b.index == i:
+        #                 empty = False
+        #         if empty:
+        #             complexTiles.append(Beat(0, 0))
+        #         else:
+        #             complexTiles.append(totalBeats[addedIndex])
+        #             addedIndex += 1
+        #     else:
+        #         complexTiles.append(Beat(0, 0))
+        #     bar()
+    complexTiles = []
+    print (len(totalBeats))
+    with alive_bar(len(totalBeats), title='Генерация комплексного пая', bar='smooth') as bar:
+        for bIndex, bValue in enumerate(totalBeats):
+            if bIndex == 0:
+                print (bValue.index)
+                complexTiles.extend([Beat(0, 0)] * (bValue.index - 1))
+                complexTiles.append(bValue)
             else:
-                complexTiles.append(Beat(0, 0))
+                complexTiles.extend([Beat(0, 0)] * (bValue.index - totalBeats[bIndex-1].index - 1))
+                complexTiles.append(bValue)
+                if bIndex == len(totalBeats) - 1:
+                    print(bValue.index)
+                    print (len(frames) / 2 - bValue.index + 1)
+                    complexTiles.extend([Beat(0, 0)] * int((len(frames) / 2 - bValue.index)))
             bar()
-
     # x = np.arange(0, len(workframes), 1)
     # plt.plot(x, workframes)
     # plt.plot(0, silentLimit, 'r.', 'MarkerSize', 50)
@@ -146,7 +161,6 @@ def GetTiles(frames, rate, pick, maxTPS, saveName):
     # plt.show()
 
     print(f'Done with {len(tb)}')
-
     return tb
 
 
@@ -155,7 +169,7 @@ def isNoneBeats(pie):
 
 
 sourceMusic = wave.open(
-    "/Users/felixmoore/Downloads/iowa-dushno-duet-mp3 [music].wav",
+    "C:\\Users\\Администратор\\Downloads\\DushnoMusic.wav",
     mode='rb')
 
 framesCount = sourceMusic.getnframes()
@@ -181,10 +195,26 @@ print("-------------НАСТРОЙКА-------------")
 print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
 print(">>> Getting Tiles Music")
-MusicTiles = GetTiles(framesList, rate, 0.7, 5, "DushnoDuetMusic")
+MusicTiles = GetTiles(framesList, rate, 0.7, 2, "DushnoDuetMusic")
+with alive_bar(len(MusicTiles), title='Корректировка тайлов', bar='smooth') as bar:
+    for i in MusicTiles:
+        i.index /= 2
+        bar()
+
+f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testmusic.til", "w")
+p = [item.index for item in MusicTiles if item.volume > 0]
+for i in p:
+    f.write(f"{i / rate}\n")
+
+f.close()
+
+plt.plot (np.arange(0, len(MusicTiles)), [i.volume for i in MusicTiles])
+plt.show()
+
+print ([item.index for item in MusicTiles if item.index != 0][:20])
 
 sourceVocals = wave.open(
-    "/Users/felixmoore/Downloads/iowa-dushno-duet-mp3 [vocals].wav",
+    "C:\\Users\\Администратор\\Downloads\\DushnoVocal.wav",
     mode='rb')
 
 framesCount = sourceVocals.getnframes()
@@ -200,19 +230,34 @@ frames = struct.unpack("<" + str(framesCount * 2) + "h", frames)
 framesList = list(frames)
 
 print(">>> Getting Tiles Vocals")
-VocalTiles = GetTiles(framesList, rate, 0.7, 5, "DushnoDuetVocals")
+VocalTiles = GetTiles(framesList, rate, 0.7, 2, "DushnoDuetVocals")
+with alive_bar(len(VocalTiles), title='Корректировка тайлов', bar='smooth') as bar:
+    for i in VocalTiles:
+        i.index /= 2
+        bar()
+
+plt.plot (np.arange(0, len(VocalTiles)), [i.volume for i in VocalTiles])
+plt.show()
+
+f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testvocal.til", "w")
+p = [item.index for item in VocalTiles if item.volume > 0]
+for i in p:
+    f.write(f"{i / rate}\n")
+
+f.close()
+
+print ([item.index for item in VocalTiles if item.index != 0][:20])
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")
 # print (f"Пик 4500; TPS 3 = {GetTileCountByPicks(frames, rate, 4500, 3)} нот")
 
 finalBeats = []
-
-with alive_bar(math.ceil(len(frames) / rate), title='Генерация комплексного пая всего произведения', bar='smooth') as bar:
-    for i in range(math.ceil(len(frames) / rate)):
-        if (i + 1) * rate > len(frames):
-            musicPie = MusicTiles[i * rate:len(frames)]
-            vocalPie = VocalTiles[i * rate:len(frames)]
+with alive_bar(math.ceil(len(frames) / rate / 2), title='Генерация комплексного пая всего произведения', bar='smooth') as bar:
+    for i in range(math.ceil(len(frames) / rate / 2)):
+        if (i + 1) * rate > len(frames)/2:
+            musicPie = MusicTiles[i * rate:int(len(frames)/2)]
+            vocalPie = VocalTiles[i * rate:int(len(frames)/2)]
         else:
             musicPie = MusicTiles[i * rate:(i + 1) * rate]
             vocalPie = VocalTiles[i * rate:(i + 1) * rate]
@@ -222,8 +267,9 @@ with alive_bar(math.ceil(len(frames) / rate), title='Генерация комп
             finalBeats.extend(vocalPie)
         bar()
 
-with alive_bar(len(finalBeats), title='Генерация плота', bar='smooth') as bar:
-    for i in finalBeats:
-        plt.plot (i.index, i.volume, 'b.')
-        bar()
+print (f"Done with {len(finalBeats)}")
+print (">>> Генерация плота...")
+print (f"Битов: {len([item for item in finalBeats if item.index != 0])}")
+print ([item.index for item in finalBeats if item.index != 0][:20])
+plt.plot(np.arange(0, len(frames) / 2), [item.volume for item in finalBeats])
 plt.show()
