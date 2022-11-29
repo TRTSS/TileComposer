@@ -165,11 +165,11 @@ def GetTiles(frames, rate, pick, maxTPS, saveName):
 
 
 def isNoneBeats(pie):
-    return pie.count(0) == 0
+    return pie.count(0) == len(pie)
 
 
 sourceMusic = wave.open(
-    "C:\\Users\\Администратор\\Downloads\\DushnoMusic.wav",
+    "/Users/felixmoore/Downloads/lovelymusic.wav",
     mode='rb')
 
 framesCount = sourceMusic.getnframes()
@@ -201,20 +201,20 @@ with alive_bar(len(MusicTiles), title='Корректировка тайлов',
         i.index /= 2
         bar()
 
-f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testmusic.til", "w")
-p = [item.index for item in MusicTiles if item.volume > 0]
-for i in p:
-    f.write(f"{i / rate}\n")
+# f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testmusic.til", "w")
+# p = [item.index for item in MusicTiles if item.volume > 0]
+# for i in p:
+#     f.write(f"{i / rate}\n")
+#
+# f.close()
 
-f.close()
-
-plt.plot (np.arange(0, len(MusicTiles)), [i.volume for i in MusicTiles])
-plt.show()
+# plt.plot (np.arange(0, len(MusicTiles)), [i.volume for i in MusicTiles])
+# plt.show()
 
 print ([item.index for item in MusicTiles if item.index != 0][:20])
 
 sourceVocals = wave.open(
-    "C:\\Users\\Администратор\\Downloads\\DushnoVocal.wav",
+    "/Users/felixmoore/Downloads/lovelycovals.wav",
     mode='rb')
 
 framesCount = sourceVocals.getnframes()
@@ -230,21 +230,21 @@ frames = struct.unpack("<" + str(framesCount * 2) + "h", frames)
 framesList = list(frames)
 
 print(">>> Getting Tiles Vocals")
-VocalTiles = GetTiles(framesList, rate, 0.7, 2, "DushnoDuetVocals")
+VocalTiles = GetTiles(framesList, rate, 0.9, 5, "DushnoDuetVocals")
 with alive_bar(len(VocalTiles), title='Корректировка тайлов', bar='smooth') as bar:
     for i in VocalTiles:
         i.index /= 2
         bar()
 
-plt.plot (np.arange(0, len(VocalTiles)), [i.volume for i in VocalTiles])
-plt.show()
+# plt.plot (np.arange(0, len(VocalTiles)), [i.volume for i in VocalTiles])
+# plt.show()
 
-f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testvocal.til", "w")
-p = [item.index for item in VocalTiles if item.volume > 0]
-for i in p:
-    f.write(f"{i / rate}\n")
-
-f.close()
+# f = open ("C:\\Users\\Администратор\\Documents\\CANTO\\testvocal.til", "w")
+# p = [item.index for item in VocalTiles if item.volume > 0]
+# for i in p:
+#     f.write(f"{i / rate}\n")
+#
+# f.close()
 
 print ([item.index for item in VocalTiles if item.index != 0][:20])
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
@@ -255,16 +255,19 @@ print ([item.index for item in VocalTiles if item.index != 0][:20])
 finalBeats = []
 with alive_bar(math.ceil(len(frames) / rate / 2), title='Генерация комплексного пая всего произведения', bar='smooth') as bar:
     for i in range(math.ceil(len(frames) / rate / 2)):
+        print (f"Обрабатываю {i}-й пай ", end='Результат: ')
         if (i + 1) * rate > len(frames)/2:
             musicPie = MusicTiles[i * rate:int(len(frames)/2)]
             vocalPie = VocalTiles[i * rate:int(len(frames)/2)]
         else:
             musicPie = MusicTiles[i * rate:(i + 1) * rate]
             vocalPie = VocalTiles[i * rate:(i + 1) * rate]
-        if isNoneBeats([item.index for item in vocalPie]):
+        if isNoneBeats([int(item.index) for item in vocalPie]):
             finalBeats.extend(musicPie)
+            print ("Музыка")
         else:
             finalBeats.extend(vocalPie)
+            print("Вокал")
         bar()
 
 print (f"Done with {len(finalBeats)}")
