@@ -18,12 +18,7 @@ class Beat:
 def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
     workframes = [abs(item) for item in frames]
 
-    silentLimit = max(workframes) * 0.2
-
-    x = np.arange(0, len(workframes), 1)
-    plt.plot(x, workframes)
-    plt.plot(0, silentLimit, 'r.', 'MarkerSize', 50)
-    plt.show()
+    silentLimit = max(workframes) * 0.01
 
     # print (len(workframes) / rate / 2)
     pies = []
@@ -135,7 +130,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
                 complexTiles.append(Beat(0, 0))
             bar()
 
-    til = open(f"D:\CantoNew\{saveName}.complextil", "w")
+    til = open(f"{input('Имя файла результата: ')}.til", "w")
 
     for i in complexTiles:
         til.write(f"{i.index / rate}\n")
@@ -152,9 +147,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
     print(f'Done with {len(totalBeats)}')
 
 
-source = wave.open(
-    "C:\\Users\\Администратор\\Downloads\\WhatElse.wav",
-    mode='rb')
+source = wave.open(input('Путь до файла для обработки: '), mode='rb')
 
 framesCount = source.getnframes()
 rate = source.getframerate()
@@ -178,7 +171,7 @@ print(f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFram
 print("-------------НАСТРОЙКА-------------")
 print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
-GetTileCountByPicks(framesList, rate, 0.5, 5, "Test")
+GetTileCountByPicks(framesList, rate, 0, 10, "Test")
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")
