@@ -35,7 +35,6 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
         else:
             pies.append(workframes[currentPieLimit - rate:len(workframes)])
         currentPieLimit += rate
-    sleep(2)
     print("DONE")
 
     totalBeats = []
@@ -109,7 +108,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
 
     totalBeats.sort(key=lambda x: x.index)
 
-    til = open(f"C:\\Users\\Администратор\\Documents\\CANTO\\{saveName}.til", "w")
+    til = open(f"D:\\CantoNew\\{saveName}.til", "w")
 
     for i in totalBeats:
         til.write(f"{i.index / rate}\n")
@@ -127,7 +126,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
 
 
 source = wave.open(
-    "C:\\Users\\Администратор\\Downloads\\Payday_-_Big_Boy-_1_.wav",
+    "C:\\Users\\Администратор\\Downloads\\WhatElse.wav",
     mode='rb')
 
 framesCount = source.getnframes()
@@ -152,7 +151,7 @@ print(f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFram
 print("-------------НАСТРОЙКА-------------")
 print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
-GetTileCountByPicks(framesList, rate, 0.7, 5, "bigboutest")
+GetTileCountByPicks(framesList, rate, 0.4, 5, "test(v2)")
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")

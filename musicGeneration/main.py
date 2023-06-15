@@ -2,9 +2,10 @@ import math
 import wave
 import struct
 
-def GetTileCountByPicks (frames, rate, pick, maxTPS):
+from alive_progress import alive_bar
 
 
+def GetTileCountByPicks(frames, rate, pick, maxTPS):
     frames = [abs(item) for item in frames]
     maxPick = max(frames)
     maxSecPick = max(frames[:rate])
@@ -17,76 +18,78 @@ def GetTileCountByPicks (frames, rate, pick, maxTPS):
 
     print(f"[Вычисляем ноты с заданными параметрами rate: {rate}, pick: {pick}, maxTPS: {maxTPS}]")
 
-
     SuitableTilesInds = []
     SuitableTiles = []
 
     ind = 0
     sec = 0
     tmpTile = []
-    for indexM, i in enumerate(frames):
-        if i > maxPick - pick:
-            tmpTile.append(i)
-        else:
-            tmpTile.append(maxPick + 1)
+    with alive_bar(len(frames), title='Обработка', bar='smooth') as bar:
+        for indexM, i in enumerate(frames):
+            if i > maxPick - pick:
+                tmpTile.append(i)
+            else:
+                tmpTile.append(maxPick + 1)
 
-        if (ind % rate == 0):
-            # sec += 1
-            # startFrame = sec * rate
-            # endFrame = (sec+1) * rate;
-            # maxSecPick = max(frames[startFrame:endFrame])
-            # print (f"Max pick: {maxSecPick}")
-            print (f"Проанализировано {round(indexM / len(frames) * 100, 2)}% ({indexM} / {len(frames)} фреймов)")
-            while (len([item for item in tmpTile if item != maxPick + 1]) > maxTPS / 2):
-                indToDelete = tmpTile.index(min(tmpTile))
-                tmpTile[indToDelete] = maxPick + 1
+            if (ind % rate == 0):
+                # sec += 1
+                # startFrame = sec * rate
+                # endFrame = (sec+1) * rate;
+                # maxSecPick = max(frames[startFrame:endFrame])
+                # print (f"Max pick: {maxSecPick}")
+                # print(f"Проанализировано {round(indexM / len(frames) * 100, 2)}% ({indexM} / {len(frames)} фреймов)")
+                while (len([item for item in tmpTile if item != maxPick + 1]) > maxTPS / 2):
+                    indToDelete = tmpTile.index(min(tmpTile))
+                    tmpTile[indToDelete] = maxPick + 1
 
-            for index, item in enumerate(tmpTile):
-                if (item == maxPick + 1):
-                    tmpTile[index] = 0
-                else:
-                    tmpTile[index] = 1
+                for index, item in enumerate(tmpTile):
+                    if (item == maxPick + 1):
+                        tmpTile[index] = 0
+                    else:
+                        tmpTile[index] = 1
 
-            SuitableTiles.extend(tmpTile)
-            tmpTile.clear()
-        ind += 1
+                SuitableTiles.extend(tmpTile)
+                tmpTile.clear()
+            ind += 1
+            bar()
 
-    file = open("C:\\Users\\Администратор\\Documents\\CANTO\\TileScenariosLifeInPink.til", "w")
+    file = open(f"{input('Имя файла результата: ')}.til", "w")
 
-    print ("Запись нот в файл...")
+    print("Запись нот в файл...")
     for index, item in enumerate(SuitableTiles):
         if (item == 1):
             file.write(f"{index / rate / 2}\n")
 
     file.close()
 
-    print (f"Нот: {SuitableTiles.count(1)}")
+    print(f"Нот: {SuitableTiles.count(1)}")
 
-source = wave.open("C:\\Users\\Администратор\\Downloads\\Kate_Nash_-_Life_in_Pink_(musmore.com).wav", mode='rb')
+
+source = wave.open(input('Путь до файла для обработки: '), mode='rb')
 
 framesCount = source.getnframes()
 rate = source.getframerate()
 
-print (f"Количество фреймов: {framesCount}\nФреймрейт: {rate}\nДлина аудиофайла (сек.): {framesCount / rate}")
+print(f"Количество фреймов: {framesCount}\nФреймрейт: {rate}\nДлина аудиофайла (сек.): {framesCount / rate}")
 
-print ("Чтение фреймов...")
+print("Чтение фреймов...")
 frames = source.readframes(framesCount)
-print ("Фреймы считаны. Анализируем...")
+print("Фреймы считаны. Анализируем...")
 
 frames = struct.unpack("<" + str(framesCount * 2) + "h", frames)
 
 framesList = list(frames)
-print (len(framesList))
+print(len(framesList))
 
 maxFrame = max(framesList)
 minFrame = min(framesList)
 
-print (f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFrame - minFrame)/2}")
+print(f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFrame - minFrame) / 2}")
 
-print ("-------------НАСТРОЙКА-------------")
-print ("-------------ШАБЛОНЫ ПИКОВ-------------")
+print("-------------НАСТРОЙКА-------------")
+print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
-GetTileCountByPicks(framesList, rate, 6000, 10)
+GetTileCountByPicks(framesList, rate, int(input(f'Максимальный пик ({maxFrame} макс.): ')), int(input('TPS: ')))
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")

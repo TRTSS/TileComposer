@@ -100,24 +100,22 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
             # plt.plot(minBeatIndex, minBeat, 'r.', 'MarkerSize', 5)
             # plt.show()
 
-            #print(f"Adding {iter} times for {rate}")
+            # print(f"Adding {iter} times for {rate}")
             for i in beatpointsIndexCompleted:
                 i.index += iter * rate
 
-
             # print ([item.index for item in beatpointsIndexCompleted])
-
 
             # print([item.index for item in complexPie])
             totalBeats.extend(beatpointsIndexCompleted)
-            #print(f"Analyzing... {round(pieInd / len(pies) * 100, 2)}% ({pieInd} / {len(pies)})")
+            # print(f"Analyzing... {round(pieInd / len(pies) * 100, 2)}% ({pieInd} / {len(pies)})")
             iter += 1
             bar()
 
     totalBeats.sort(key=lambda x: x.index)
 
-    print (">>> Тайлы получены")
-    print (">>> Создание комплексного пая")
+    print(">>> Тайлы получены")
+    print(">>> Создание комплексного пая")
     complexTiles = []
     addedIndex = 0
     t = 0
@@ -137,7 +135,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
                 complexTiles.append(Beat(0, 0))
             bar()
 
-    til = open(f"/Users/felixmoore/Desktop/CANTO Tiles/{saveName}.complextil", "w")
+    til = open(f"D:\CantoNew\{saveName}.complextil", "w")
 
     for i in complexTiles:
         til.write(f"{i.index / rate}\n")
@@ -155,7 +153,7 @@ def GetTileCountByPicks(frames, rate, pick, maxTPS, saveName):
 
 
 source = wave.open(
-    "C:\\Users\\Администратор\\Downloads\\DushnoMusic.wav",
+    "C:\\Users\\Администратор\\Downloads\\WhatElse.wav",
     mode='rb')
 
 framesCount = source.getnframes()
@@ -180,7 +178,7 @@ print(f"Макс: {maxFrame}\nМин: {minFrame}\nАмплитуда: ~{(maxFram
 print("-------------НАСТРОЙКА-------------")
 print("-------------ШАБЛОНЫ ПИКОВ-------------")
 
-GetTileCountByPicks(framesList, rate, 0.7, 5, "DushnoDuetMusic")
+GetTileCountByPicks(framesList, rate, 0.5, 5, "Test")
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")

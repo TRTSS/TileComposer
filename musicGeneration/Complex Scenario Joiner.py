@@ -120,34 +120,34 @@ def GetTiles(frames, rate, pick, maxTPS, saveName):
     addedIndex = 0
     t = 0
     # with alive_bar(len(frames), title='Генерация комплексного пая', bar='smooth') as bar:
-        # for i in range(0, len(frames)):
-        #     if len(totalBeats) > 0:
-        #         empty = True
-        #         for b in totalBeats:
-        #             if b.index == i:
-        #                 empty = False
-        #         if empty:
-        #             complexTiles.append(Beat(0, 0))
-        #         else:
-        #             complexTiles.append(totalBeats[addedIndex])
-        #             addedIndex += 1
-        #     else:
-        #         complexTiles.append(Beat(0, 0))
-        #     bar()
+    # for i in range(0, len(frames)):
+    #     if len(totalBeats) > 0:
+    #         empty = True
+    #         for b in totalBeats:
+    #             if b.index == i:
+    #                 empty = False
+    #         if empty:
+    #             complexTiles.append(Beat(0, 0))
+    #         else:
+    #             complexTiles.append(totalBeats[addedIndex])
+    #             addedIndex += 1
+    #     else:
+    #         complexTiles.append(Beat(0, 0))
+    #     bar()
     complexTiles = []
-    print (len(totalBeats))
+    print(len(totalBeats))
     with alive_bar(len(totalBeats), title='Генерация комплексного пая', bar='smooth') as bar:
         for bIndex, bValue in enumerate(totalBeats):
             if bIndex == 0:
-                print (bValue.index)
+                print(bValue.index)
                 complexTiles.extend([Beat(0, 0)] * (bValue.index - 1))
                 complexTiles.append(bValue)
             else:
-                complexTiles.extend([Beat(0, 0)] * (bValue.index - totalBeats[bIndex-1].index - 1))
+                complexTiles.extend([Beat(0, 0)] * (bValue.index - totalBeats[bIndex - 1].index - 1))
                 complexTiles.append(bValue)
                 if bIndex == len(totalBeats) - 1:
                     print(bValue.index)
-                    print (len(frames) / 2 - bValue.index + 1)
+                    print(len(frames) / 2 - bValue.index + 1)
                     complexTiles.extend([Beat(0, 0)] * int((len(frames) / 2 - bValue.index)))
             bar()
     # x = np.arange(0, len(workframes), 1)
@@ -168,8 +168,9 @@ def isNoneBeats(pie):
     return pie.count(0) == len(pie)
 
 
+# MUSIC FILE TAG
 sourceMusic = wave.open(
-    "/Users/felixmoore/Downloads/lovelymusic.wav",
+    "C:\\Users\\Администратор\\Downloads\\WhatElse [music].wav",
     mode='rb')
 
 framesCount = sourceMusic.getnframes()
@@ -211,10 +212,11 @@ with alive_bar(len(MusicTiles), title='Корректировка тайлов',
 # plt.plot (np.arange(0, len(MusicTiles)), [i.volume for i in MusicTiles])
 # plt.show()
 
-print ([item.index for item in MusicTiles if item.index != 0][:20])
+print([item.index for item in MusicTiles if item.index != 0][:20])
 
+# VOCAL FILE TAG
 sourceVocals = wave.open(
-    "/Users/felixmoore/Downloads/lovelycovals.wav",
+    "C:\\Users\\Администратор\\Downloads\\WhatElse [vocals].wav",
     mode='rb')
 
 framesCount = sourceVocals.getnframes()
@@ -246,33 +248,43 @@ with alive_bar(len(VocalTiles), title='Корректировка тайлов',
 #
 # f.close()
 
-print ([item.index for item in VocalTiles if item.index != 0][:20])
+print([item.index for item in VocalTiles if item.index != 0][:20])
 # print (f"Пик 1500; TPS 3 = {GetTileCountByPicks(frames, rate, 1500, 3)} нот")
 # print (f"Пик 2500; TPS 3 = {GetTileCountByPicks(frames, rate, 2500, 3)} нот")
 # print (f"Пик 3500; TPS 3= {GetTileCountByPicks(frames, rate, 3500, 3)} нот")
 # print (f"Пик 4500; TPS 3 = {GetTileCountByPicks(frames, rate, 4500, 3)} нот")
 
 finalBeats = []
-with alive_bar(math.ceil(len(frames) / rate / 2), title='Генерация комплексного пая всего произведения', bar='smooth') as bar:
+with alive_bar(math.ceil(len(frames) / rate / 2), title='Генерация комплексного пая всего произведения',
+               bar='smooth') as bar:
     for i in range(math.ceil(len(frames) / rate / 2)):
-        print (f"Обрабатываю {i}-й пай ", end='Результат: ')
-        if (i + 1) * rate > len(frames)/2:
-            musicPie = MusicTiles[i * rate:int(len(frames)/2)]
-            vocalPie = VocalTiles[i * rate:int(len(frames)/2)]
+        print(f"Обрабатываю {i}-й пай ", end='Результат: ')
+        if (i + 1) * rate > len(frames) / 2:
+            musicPie = MusicTiles[i * rate:int(len(frames) / 2)]
+            vocalPie = VocalTiles[i * rate:int(len(frames) / 2)]
         else:
             musicPie = MusicTiles[i * rate:(i + 1) * rate]
             vocalPie = VocalTiles[i * rate:(i + 1) * rate]
         if isNoneBeats([int(item.index) for item in vocalPie]):
             finalBeats.extend(musicPie)
-            print ("Музыка")
+            print("Музыка")
         else:
             finalBeats.extend(vocalPie)
             print("Вокал")
         bar()
 
-print (f"Done with {len(finalBeats)}")
-print (">>> Генерация плота...")
-print (f"Битов: {len([item for item in finalBeats if item.index != 0])}")
-print ([item.index for item in finalBeats if item.index != 0][:20])
+print(f"Done with {len(finalBeats)}")
+print(">>> Генерация плота...")
+print(f"Битов: {len([item for item in finalBeats if item.index != 0])}")
+print([item.index for item in finalBeats if item.index != 0][:20])
 plt.plot(np.arange(0, len(frames) / 2), [item.volume for item in finalBeats])
 plt.show()
+print([x.index / rate for x in finalBeats if x.index != 0][:10])
+
+# WRITING TILES
+tiles = open('D:\\CantoNew\\test.til', 'w')
+for x in [x.index / rate for x in finalBeats if x.index != 0]:
+    tiles.write(str(x) + "\n")
+
+tiles.close()
+print('Done')
